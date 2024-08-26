@@ -4,7 +4,31 @@ class ProductsController < ApplicationController
 
   # GET /products or /products.json
   def index
-    @products = Product.all
+    result = FetchProducts.call(params: params)
+    
+    respond_to do |format|
+     
+        format.html do
+          if result.success?
+            @products = result.products
+            @pagy = result.pagy
+          else
+            flash[:error] = result.error
+          end
+        end
+
+        format.json do
+          if result.success?
+            render json: {
+              products: result.products,
+              pagination: result.pagy
+            }
+          else
+            render json: { error: result.error }, status: :unprocessable_entity
+          end
+        end
+     
+    end
   end
 
   # GET /products/1 or /products/1.json
